@@ -7,21 +7,23 @@ let str_to_digit str =
   if digits1 |> List.mem str then 
     str |> int_of_string
   else
-    digits2 |> Utils.list_find_index str |> Option.get |> ((+) 1);;
+    digits2 |> Utils.list_find_index str |> Option.get |> succ;;
 
 let line_to_num digits line =
-  let rec get_digit s len pos pred = 
-    match len with 
-    | 0 -> 0 
-    | n -> 
-      let new_len = n - 1 in
-      let new_digit = 
+  let get_digit s len pos pred = 
+    let rec aux s len = 
+      match len with 
+      | 0 -> 0 
+      | n -> 
         digits 
         |> List.find_opt (pred s)
-        |> Option.map str_to_digit in 
-      match new_digit with
-      | Some d -> d
-      | None -> get_digit (String.sub s pos new_len) new_len pos pred in
+        |> function
+        | Some d -> str_to_digit d
+        | None -> 
+          let new_len = n - 1 in
+          let new_str = String.sub s pos new_len in
+          aux new_str new_len in
+    aux s len in
 
   let line_len = String.length line in 
   let first_digit = get_digit line line_len 1 (fun s d -> String.starts_with ~prefix:d s) in
