@@ -7,7 +7,7 @@ let str_to_digit str =
   if digits1 |> List.mem str then 
     str |> int_of_string
   else
-    digits2 |> Utils.list_find_index str |> Option.get |> (fun n -> n + 1);;
+    digits2 |> Utils.list_find_index str |> Option.get |> ((+) 1);;
 
 let line_to_num digits line =
   let rec get_digit s len pos pred = 
