@@ -1,15 +1,4 @@
-let digits1 = 
-  [ 
-    "1"; 
-    "2" ; 
-    "3" ;
-    "4" ;
-    "5" ;
-    "6" ;
-    "7" ;
-    "8" ;
-    "9" 
-];;
+let digits1 =  [ "1"; "2"; "3"; "4"; "5"; "6"; "7"; "8"; "9" ];;
 
 let digits2 = 
   [
@@ -38,34 +27,24 @@ let str_to_digit str =
   | _ -> failwith "Invalid digit";;
 
 let line_to_num digits line =
-  let rec get_first_digit s len =
+  let rec get_digit s len pos pred = 
     match len with 
     | 0 -> 0 
     | n -> 
       let new_len = n - 1 in
       let new_digit = 
         digits 
-        |> List.find_opt (fun d -> String.starts_with ~prefix:d s) 
+        |> List.find_opt (pred s)
         |> Option.map str_to_digit in 
       match new_digit with
       | Some d -> d
-      | None -> get_first_digit (String.sub s 1 new_len) new_len in
+      | None -> get_digit (String.sub s pos new_len) new_len pos pred in
 
-  let rec get_last_digit s len =
-    match len with 
-    | 0 -> 0 
-    | n -> 
-      let new_len = n - 1 in
-      let new_digit = 
-        digits 
-        |> List.find_opt (fun d -> String.ends_with ~suffix:d s) 
-        |> Option.map str_to_digit in 
-      match new_digit with
-      | Some d -> d
-      | None -> get_last_digit (String.sub s 0 new_len) new_len in
-
-    let line_len = String.length line in 
-    10 * (get_first_digit line line_len) + (get_last_digit line line_len)
+  let line_len = String.length line in 
+  let first_digit = get_digit line line_len 1 (fun s d -> String.starts_with ~prefix:d s) in
+  let second_digit = get_digit line line_len 0 (fun s d -> String.ends_with ~suffix:d s) in
+  
+  10 * first_digit + second_digit
 ;;
 
 let task lines digits =
