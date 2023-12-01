@@ -50,12 +50,12 @@ let line_to_num digits line =
 let task lines digits =
   lines
   |> List.map (line_to_num digits)
-  |> List.fold_left (+) 0;;
+  |> Utils.list_sum;;
 
-  let lines  = Utils.file_to_lines ("input/day1.txt") in
-  let result1 = task lines digits1 in
-  let result2 = task lines digits2 in
-    Printf.printf "Task1: %d\n" result1;
-    Printf.printf "Task2: %d\n" result2;
-    assert (result1 = 55488);
-    assert (result2 = 55614);
+let lines  = Utils.file_to_lines ("input/day1.txt") in
+let result1 = task lines digits1 in
+let result2 = task lines digits2 in
+  Printf.printf "Task1: %d\n" result1;
+  Printf.printf "Task2: %d\n" result2;
+  assert (result1 = 55488);
+  assert (result2 = 55614);
