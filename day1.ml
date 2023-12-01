@@ -1,30 +1,13 @@
 let digits1 =  [ "1"; "2"; "3"; "4"; "5"; "6"; "7"; "8"; "9" ];;
 
 let digits2 = 
-  [
-    "one";
-    "two";
-    "three";
-    "four";
-    "five";
-    "six";
-    "seven";
-    "eight";
-    "nine"
-  ] @ digits1;;
+  [ "one"; "two"; "three"; "four"; "five"; "six"; "seven"; "eight"; "nine" ] @ digits1;;
 
 let str_to_digit str =
-  match str with
-  | "1" | "one" -> 1
-  | "2" | "two" -> 2
-  | "3" | "three" -> 3
-  | "4" | "four" -> 4
-  | "5" | "five" -> 5
-  | "6" | "six" -> 6
-  | "7" | "seven" -> 7
-  | "8" | "eight" -> 8
-  | "9" | "nine" -> 9
-  | _ -> failwith "Invalid digit";;
+  if digits1 |> List.mem str then 
+    str |> int_of_string
+  else
+    digits2 |> Utils.list_find_index str |> Option.get |> (fun n -> n + 1);;
 
 let line_to_num digits line =
   let rec get_digit s len pos pred = 

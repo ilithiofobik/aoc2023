@@ -44,3 +44,10 @@ let list_cartesian base_row base_col =
 let seq_sum64 seq =
   seq |> Seq.fold_left Int64.add Int64.zero
 ;;
+
+let list_find_index value list =
+  let rec aux list index =
+    match list with
+    | [] -> None
+    | x::xs -> if x = value then Some index else aux xs (index + 1)
+  in aux list 0;;
