@@ -6,13 +6,13 @@ let list_to_pair l =
   | _ -> failwith "Invalid list"
 
 let line_to_pairs line =
-  let splitted = String.split line ~on:':' in
-  let games = List.nth_exn splitted 1 in
-  let normalized = String.tr ~target:';' ~replacement:',' games in
-  let pairs = String.split normalized ~on:',' in
-  let trimmed = List.map pairs ~f:String.strip in
-  let rounds = List.map trimmed ~f:(String.split ~on:' ') in
-  List.map rounds ~f:list_to_pair
+  let splitted = line |> String.split ~on:':' in
+  List.nth_exn splitted 1
+  |> String.tr ~target:';' ~replacement:','
+  |> String.split ~on:','
+  |> List.map ~f:String.strip
+  |> List.map ~f:(String.split ~on:' ')
+  |> List.map ~f:list_to_pair
 
 let legal_color (num, color) =
   let max_num =
@@ -23,9 +23,7 @@ let legal_color (num, color) =
     | _ -> failwith "Unknown color" in
   num <= max_num
 
-let legal_line line =
-  let pairs = line_to_pairs line in
-  List.for_all ~f:legal_color pairs
+let legal_line line = line_to_pairs line |> List.for_all ~f:legal_color
 
 let line_to_power line =
   let rec aux red blue green ps =
@@ -37,14 +35,17 @@ let line_to_power line =
     | "blue" -> aux red (max blue num) green ps'
     | "green" -> aux red blue (max green num) ps'
     | _ -> failwith "Unknown color" in
-  aux 0 0 0 (line_to_pairs line)
+  line_to_pairs line |> aux 0 0 0
 
 let task1 lines =
-  let mapped = List.mapi lines ~f:(fun i line -> (i + 1, legal_line line)) in
-  let filtered = List.filter mapped ~f:snd in
-  List.map filtered ~f:fst |> Utils.list_sum
+  let f i line = (i + 1, legal_line line) in
+  lines
+  |> List.mapi ~f
+  |> List.filter ~f:snd
+  |> List.map ~f:fst
+  |> Utils.list_sum
 
-let task2 lines = List.map ~f:line_to_power lines |> Utils.list_sum
-let lines = Utils.file_to_lines "../../../data/day2.txt"
+let task2 lines = lines |> List.map ~f:line_to_power |> Utils.list_sum
+let lines = In_channel.read_lines "../../../data/day2.txt"
 let result1 = task1 lines
 let result2 = task2 lines
