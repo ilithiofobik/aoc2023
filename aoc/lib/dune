@@ -1,0 +1,5 @@
+(library
+ (public_name aoc)
+ (name aoc)
+ (modules Utils Day1 Day2)
+ (libraries core))

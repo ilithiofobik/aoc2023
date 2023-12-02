@@ -1,0 +1,17 @@
+(lang dune 2.9)
+
+(name aoc)
+
+(generate_opam_files true)
+
+(package
+ (name aoc)
+ (version 0.1)
+ (synopsis "Advent of Code 2023")
+ (description "Advent of Code 2023")
+ (depends
+  (alcotest :with-test)
+  (ocamlformat
+   (>= 0.20))
+  (core
+   (>= 0.15))))
