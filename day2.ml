@@ -1,7 +1,7 @@
 let list_to_pair l =
-  let num = List.hd l |> int_of_string in
-  let color = List.nth l 1 in 
-  (num, color);;
+  match l with
+  | [ num; color ] -> (int_of_string num, color)
+  | _ -> failwith "Invalid list";;
 
 let line_to_pairs line =
   line 
@@ -28,7 +28,7 @@ let legal_line line =
   |> line_to_pairs
   |> List.for_all (fun (num, color) -> legal_color num color);;
 
-let line_to_power pairs = 
+let line_to_power line = 
   let rec aux red blue green ps =
     match ps with
     | [] -> red * blue * green
@@ -38,24 +38,22 @@ let line_to_power pairs =
       | "blue" -> aux red (max blue num) green ps'
       | "green" -> aux red blue (max green num) ps'
       | _ -> failwith "Unknown color" in
-  aux 0 0 0 pairs;;
+  aux 0 0 0 (line_to_pairs line);;
 
 let task1 lines =
   lines
+  |> List.mapi (fun i line -> (i + 1, line))
   |> List.filter (fun (_, line) -> legal_line line)
   |> List.map fst 
   |> Utils.list_sum;;
 
 let task2 lines =
   lines
-  |> List.map snd
-  |> List.map line_to_pairs
   |> List.map line_to_power
   |> Utils.list_sum;;
 
 let lines =
-  Utils.file_to_lines ("input/day2.txt") 
-  |> List.mapi (fun i line -> (i + 1, line)) in
+  Utils.file_to_lines ("input/day2.txt") in
 let result1 = task1 lines in
 let result2 = task2 lines in
   Printf.printf "Task1: %d\n" result1;
