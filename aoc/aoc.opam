@@ -8,6 +8,9 @@ depends: [
   "alcotest" {with-test}
   "ocamlformat" {>= "0.20"}
   "core" {>= "0.15"}
+  "ocamlformat" {>= "0.20"}
+  "ocamlformat-rpc" {>= "0.19"}
+  "ocaml-lsp-server" {>= "1.10.3"}
   "odoc" {with-doc}
 ]
 build: [
