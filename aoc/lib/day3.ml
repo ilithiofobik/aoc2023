@@ -30,9 +30,8 @@ let sym_to_value nums s =
   | '*' ->
     nums
     |> List.filter ~f:(neighbours s)
-    |> List.map ~f:(fun n -> n.num)
     |> (function
-     | [ num1; num2 ] -> num1 * num2 |> Option.some
+     | [ num1; num2 ] -> num1.num * num2.num |> Option.some
      | _ -> None)
   | _ -> None
 ;;
