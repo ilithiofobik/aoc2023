@@ -1,27 +1,40 @@
 open Core
 
-let neighbours s_row s_col n_row n_col len =
-  let row_geq = s_row >= n_row - 1 in
-  let row_leq = s_row <= n_row + 1 in
-  let col_geq = s_col >= n_col - 1 in
-  let col_leq = s_col <= n_col + len in
+type symbol =
+  { row : int
+  ; col : int
+  ; sym : char
+  }
+
+type number =
+  { row : int
+  ; col : int
+  ; len : int
+  ; num : int
+  }
+
+let neighbours (s : symbol) (n : number) =
+  let row_geq = s.row >= n.row - 1 in
+  let row_leq = s.row <= n.row + 1 in
+  let col_geq = s.col >= n.col - 1 in
+  let col_leq = s.col <= n.col + n.len in
   row_geq && row_leq && col_geq && col_leq
 ;;
 
-let num_to_value syms (a, b, len, num) =
-  if syms |> List.exists ~f:(fun (i, j, _) -> neighbours i j a b len) then num else 0
+let num_to_value syms num =
+  if syms |> List.exists ~f:(fun s -> neighbours s num) then Some num.num else None
 ;;
 
-let sym_to_value nums (a, b, sym) =
-  match sym with
+let sym_to_value nums s =
+  match s.sym with
   | '*' ->
     nums
-    |> List.filter ~f:(fun (i, j, len, _) -> neighbours a b i j len)
-    |> List.map ~f:(fun (_, _, _, num) -> num)
+    |> List.filter ~f:(neighbours s)
+    |> List.map ~f:(fun n -> n.num)
     |> (function
-     | [ num1; num2 ] -> num1 * num2
-     | _ -> 0)
-  | _ -> 0
+     | [ num1; num2 ] -> num1 * num2 |> Option.some
+     | _ -> None)
+  | _ -> None
 ;;
 
 let linei_to_num_sym i line =
@@ -29,7 +42,11 @@ let linei_to_num_sym i line =
     match input with
     | [] ->
       let new_nums =
-        if cnum_len = 0 then nums else (i, j - cnum_len, cnum_len, cnum) :: nums
+        if cnum_len = 0
+        then nums
+        else (
+          let new_num = { row = i; col = j - cnum_len; len = cnum_len; num = cnum } in
+          new_num :: nums)
       in
       new_nums, syms
     | c :: cs ->
@@ -41,20 +58,22 @@ let linei_to_num_sym i line =
          let new_syms =
            match c with
            | '.' -> syms
-           | _ -> (i, j, c) :: syms
+           | _ -> { row = i; col = j; sym = c } :: syms
          in
          let new_nums =
            match cnum_len with
            | 0 -> nums
-           | _ -> (i, j - cnum_len, cnum_len, cnum) :: nums
+           | _ ->
+             let new_num = { row = i; col = j - cnum_len; len = cnum_len; num = cnum } in
+             new_num :: nums
          in
          aux 0 0 (j + 1) new_nums new_syms cs)
   in
   aux 0 0 0 [] [] line
 ;;
 
-let task1 nums syms = nums |> List.map ~f:(num_to_value syms) |> Utils.list_sum
-let task2 nums syms = syms |> List.map ~f:(sym_to_value nums) |> Utils.list_sum
+let task1 nums syms = nums |> List.filter_map ~f:(num_to_value syms) |> Utils.list_sum
+let task2 nums syms = syms |> List.filter_map ~f:(sym_to_value nums) |> Utils.list_sum
 let lines = In_channel.read_lines "../../../data/day3.txt"
 let pairs = lines |> List.map ~f:String.to_list |> List.mapi ~f:linei_to_num_sym
 let nums = List.concat_map pairs ~f:fst
