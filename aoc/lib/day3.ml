@@ -38,16 +38,15 @@ let sym_to_value nums s =
 
 let linei_to_num_sym i line =
   let rec aux cnum cnum_len j nums syms input =
+    let new_nums =
+      match cnum_len with
+      | 0 -> nums
+      | _ ->
+        let new_num = { row = i; col = j - cnum_len; len = cnum_len; num = cnum } in
+        new_num :: nums
+    in
     match input with
-    | [] ->
-      let new_nums =
-        if cnum_len = 0
-        then nums
-        else (
-          let new_num = { row = i; col = j - cnum_len; len = cnum_len; num = cnum } in
-          new_num :: nums)
-      in
-      new_nums, syms
+    | [] -> new_nums, syms
     | c :: cs ->
       (match c with
        | '0' .. '9' as c ->
@@ -58,13 +57,6 @@ let linei_to_num_sym i line =
            match c with
            | '.' -> syms
            | _ -> { row = i; col = j; sym = c } :: syms
-         in
-         let new_nums =
-           match cnum_len with
-           | 0 -> nums
-           | _ ->
-             let new_num = { row = i; col = j - cnum_len; len = cnum_len; num = cnum } in
-             new_num :: nums
          in
          aux 0 0 (j + 1) new_nums new_syms cs)
   in
