@@ -44,8 +44,8 @@ let line_to_power line =
 ;;
 
 let task1 lines =
-  let f i line = i + 1, legal_line line in
-  lines |> List.mapi ~f |> List.filter ~f:snd |> List.map ~f:fst |> Utils.list_sum
+  let f i line = if legal_line line then i + 1 |> Option.some else None in
+  lines |> List.filter_mapi ~f |> Utils.list_sum
 ;;
 
 let task2 lines = lines |> List.map ~f:line_to_power |> Utils.list_sum

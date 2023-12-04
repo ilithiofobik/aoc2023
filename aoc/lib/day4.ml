@@ -12,10 +12,11 @@ let line_to_value line =
     let splitted = line |> String.split ~on:':' in
     List.nth_exn splitted 1 |> String.split ~on:'|' |> List.map ~f:string_to_nums
   in
-  let winning = List.nth_exn pair 0 in
-  let my = List.nth_exn pair 1 in
-  let f x = List.mem winning x ~equal:( = ) in
-  my |> List.count ~f
+  match pair with
+  | [ winning; my ] ->
+    let f x = List.mem winning x ~equal:( = ) in
+    my |> List.count ~f
+  | _ -> failwith "Invalid input"
 ;;
 
 let safe_pow num =
@@ -26,16 +27,12 @@ let safe_pow num =
 
 let scratch_count values =
   let counts = Array.init (List.length values) ~f:(const 1) in
-  let rec aux values idx =
-    match values with
-    | [] -> counts |> Utils.array_sum
-    | v :: vs ->
-      let c = idx |> Array.get counts in
-      List.init v ~f:(fun x -> x + idx + 1)
-      |> List.iter ~f:(fun x -> counts.(x) <- counts.(x) + c);
-      aux vs (idx + 1)
+  let f i v =
+    let c = i |> Array.get counts in
+    List.init v ~f:(( + ) (i + 1)) |> List.iter ~f:(fun x -> counts.(x) <- counts.(x) + c)
   in
-  aux values 0
+  values |> List.iteri ~f;
+  counts |> Utils.array_sum
 ;;
 
 let lines = In_channel.read_lines "../../../data/day4.txt"
