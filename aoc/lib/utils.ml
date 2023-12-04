@@ -2,6 +2,7 @@ open Core
 
 let list_sum list = list |> List.fold_left ~f:( + ) ~init:0
 let list_prod list = list |> List.fold_left ~f:(fun a b -> a * b) ~init:1
+let array_sum arr = arr |> Array.fold ~f:( + ) ~init:0
 
 let list_cartesian base_row base_col =
   let rec aux row col result =

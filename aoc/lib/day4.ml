@@ -25,19 +25,17 @@ let safe_pow num =
 ;;
 
 let scratch_count values =
-  let rec aux values counts idx =
+  let counts = Array.init (List.length values) ~f:(const 1) in
+  let rec aux values idx =
     match values with
-    | [] -> counts |> Utils.list_sum
+    | [] -> counts |> Utils.array_sum
     | v :: vs ->
-      let new_counts =
-        let c = List.nth_exn counts idx in
-        let f i x = if idx < i && i <= idx + v then x + c else x in
-        counts |> List.mapi ~f
-      in
-      aux vs new_counts (idx + 1)
+      let c = idx |> Array.get counts in
+      List.init v ~f:(fun x -> x + idx + 1)
+      |> List.iter ~f:(fun x -> counts.(x) <- counts.(x) + c);
+      aux vs (idx + 1)
   in
-  let counts = List.init (List.length values) ~f:(const 1) in
-  aux values counts 0
+  aux values 0
 ;;
 
 let lines = In_channel.read_lines "../../../data/day4.txt"
