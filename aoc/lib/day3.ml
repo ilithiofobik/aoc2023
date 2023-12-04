@@ -21,8 +21,8 @@ let neighbours (s : symbol) (n : number) =
   row_geq && row_leq && col_geq && col_leq
 ;;
 
-let num_to_value syms num =
-  if syms |> List.exists ~f:(fun s -> neighbours s num) then Some num.num else None
+let num_to_value syms n =
+  if syms |> List.exists ~f:(fun s -> neighbours s n) then Some n.num else None
 ;;
 
 let sym_to_value nums s =
@@ -31,7 +31,7 @@ let sym_to_value nums s =
     nums
     |> List.filter ~f:(neighbours s)
     |> (function
-     | [ num1; num2 ] -> num1.num * num2.num |> Option.some
+     | [ n1; n2 ] -> n1.num * n2.num |> Option.some
      | _ -> None)
   | _ -> None
 ;;
@@ -63,11 +63,9 @@ let linei_to_num_sym i line =
   aux 0 0 0 [] [] line
 ;;
 
-let task1 nums syms = nums |> List.filter_map ~f:(num_to_value syms) |> Utils.list_sum
-let task2 nums syms = syms |> List.filter_map ~f:(sym_to_value nums) |> Utils.list_sum
 let lines = In_channel.read_lines "../../../data/day3.txt"
 let pairs = lines |> List.map ~f:String.to_list |> List.mapi ~f:linei_to_num_sym
 let nums = List.concat_map pairs ~f:fst
 let syms = List.concat_map pairs ~f:snd
-let result1 = task1 nums syms
-let result2 = task2 nums syms
+let result1 = nums |> List.filter_map ~f:(num_to_value syms) |> Utils.list_sum
+let result2 = syms |> List.filter_map ~f:(sym_to_value nums) |> Utils.list_sum
