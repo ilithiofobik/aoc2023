@@ -8,10 +8,15 @@ type range_mapping =
 
 type input =
   { seeds : int list
-  ; maps : range_mapping array array
+  ; mmaps : range_mapping array array
   }
 
-let lines_to_maps lines =
+type range =
+  { start : int
+  ; length : int
+  }
+
+let lines_to_mmaps lines =
   let cmp a b = Int.compare a.source_start b.source_start in
   let rec aux lines (map_acc : range_mapping list) (maps_acc : range_mapping array list) =
     match lines with
@@ -52,10 +57,10 @@ let line_to_seed line =
 
 let lines_to_input lines =
   match lines with
-  | seeds :: _ :: maps ->
+  | seeds :: _ :: mmaps ->
     let seeds = seeds |> line_to_seed in
-    let maps = maps |> lines_to_maps in
-    { seeds; maps }
+    let mmaps = mmaps |> lines_to_mmaps in
+    { seeds; mmaps }
   | _ -> failwith "Invalid input"
 ;;
 
@@ -75,35 +80,70 @@ let map_value value map =
   bin_search 0 (Array.length map - 1)
 ;;
 
-let seed_to_location maps value =
-  maps 
-  |> Array.fold ~init:value ~f:map_value
+let seed_to_location maps value = maps |> Array.fold ~init:value ~f:map_value
+
+let seeds_to_ranges seeds =
+  let rec aux seeds acc =
+    match seeds with
+    | [] -> acc
+    | start :: length :: rest -> aux rest ({ start; length } :: acc)
+    | _ -> failwith "Invalid input"
+  in
+  aux seeds []
+;;
+
+let map_range map r =
+  let r_start = r.start in
+  let src_start = map.source_start in
+  let dst_start = map.destination_start in
+  let r_end = r.start + r.length in
+  let src_end = map.source_start + map.length in
+  let before =
+    if r_start < src_start
+    then [ { start = r_start; length = src_start - r_start } ]
+    else []
+  and after =
+    if r_end > src_end then [ { start = src_end; length = r_end - src_end } ] else []
+  and common =
+    if (src_start <= r_start && r_start < src_end) || (src_end < r_end && r_end <= src_end)
+    then (
+      let offset = dst_start - src_start in
+      let nstart = max r_start src_start in
+      let nend = min r_end src_end in
+      let start = nstart + offset in
+      let length = nend - nstart in
+      [ { start; length } ])
+    else []
+  in
+  before @ after, common
+;;
+
+let maps_ranges ranges maps =
+  let n = maps |> Array.length in
+  let rec aux unmapped mapped pos =
+    match pos with
+    | k when k = n -> mapped @ unmapped
+    | k ->
+      let pairs = List.map ~f:(map_range maps.(k)) unmapped in
+      let new_unmapped, new_mapped = List.unzip pairs in
+      aux (new_unmapped |> List.concat) (new_mapped |> List.concat) (k + 1)
+  in
+  aux ranges [] 0
 ;;
 
 let ranges_to_min_loc input =
-  let rec aux ranges cmin =
-    match ranges with
-    | [] -> cmin
-    | r_start :: r_len :: rest ->
-      List.init r_len ~f:(( + ) r_start)
-      |> List.map ~f:(seed_to_location input.maps)
-      |> Utils.list_min
-      |> min cmin
-      |> aux rest
-    | _ -> failwith "Invalid input"
-  in
-  aux input.seeds Int.max_value
+  let ranges = input.seeds |> seeds_to_ranges in
+  let mmaps = input.mmaps in
+  mmaps
+  |> Array.fold ~init:ranges ~f:maps_ranges
+  |> List.map ~f:(fun r -> r.start)
+  |> Utils.list_min
 ;;
 
 let lines = In_channel.read_lines "../../../data/day5.txt"
-let input1 = lines |> lines_to_input
-
-let task input =
-  input.seeds |> List.map ~f:(seed_to_location input.maps) |> Utils.list_min
-;;
-
-let result1 = input1 |> task
-let result2 = input1 |> ranges_to_min_loc
+let input = lines |> lines_to_input
+let result1 = input.seeds |> List.map ~f:(seed_to_location input.mmaps) |> Utils.list_min
+let result2 = input |> ranges_to_min_loc
 
 let () =
   Stdio.printf "Result1: %d\n" result1;
