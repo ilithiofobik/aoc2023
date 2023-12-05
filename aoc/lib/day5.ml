@@ -8,7 +8,7 @@ type range_mapping =
 
 type input =
   { seeds : int list
-  ; maps : range_mapping array list
+  ; maps : range_mapping array array
   }
 
 let lines_to_maps lines =
@@ -18,7 +18,7 @@ let lines_to_maps lines =
     | [] ->
       let sorted = map_acc |> Array.of_list in
       Array.sort ~compare:cmp sorted;
-      sorted :: maps_acc |> List.rev
+      sorted :: maps_acc |> List.rev |> Array.of_list
     | line :: lines ->
       if String.is_empty line
       then (
@@ -59,7 +59,7 @@ let lines_to_input lines =
   | _ -> failwith "Invalid input"
 ;;
 
-let map_value map value =
+let map_value value map =
   let rec bin_search left right =
     if left > right
     then value
@@ -75,13 +75,9 @@ let map_value map value =
   bin_search 0 (Array.length map - 1)
 ;;
 
-let seed_to_location maps seed =
-  let rec aux curr maps =
-    match maps with
-    | [] -> curr
-    | map :: maps -> aux (map_value map curr) maps
-  in
-  aux seed maps
+let seed_to_location maps value =
+  maps 
+  |> Array.fold ~init:value ~f:map_value
 ;;
 
 let ranges_to_min_loc input =
