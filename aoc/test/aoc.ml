@@ -20,5 +20,9 @@ let () =
         , [ test_case "result1" `Quick (fun () -> assert (Day4.result1 = 25004))
           ; test_case "result2" `Quick (fun () -> assert (Day4.result2 = 14427616))
           ] )
+      ; ( "Day5"
+        , [ test_case "result1" `Quick (fun () -> assert (Day5.result1 = 226172555))
+          ; test_case "result2" `Quick (fun () -> assert (Day5.result2 = 5893654))
+          ] )
       ])
 ;;
