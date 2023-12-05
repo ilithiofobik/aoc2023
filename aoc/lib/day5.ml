@@ -8,16 +8,23 @@ type range_mapping =
 
 type input =
   { seeds : int list
-  ; maps : range_mapping list list
+  ; maps : range_mapping array list
   }
 
 let lines_to_maps lines =
-  let rec aux lines map_acc maps_acc =
+  let cmp a b = Int.compare a.source_start b.source_start in
+  let rec aux lines (map_acc : range_mapping list) (maps_acc : range_mapping array list) =
     match lines with
-    | [] -> map_acc :: maps_acc |> List.rev
+    | [] ->
+      let sorted = map_acc |> Array.of_list in
+      Array.sort ~compare:cmp sorted;
+      sorted :: maps_acc |> List.rev
     | line :: lines ->
       if String.is_empty line
-      then aux lines [] (map_acc :: maps_acc)
+      then (
+        let sorted = map_acc |> Array.of_list in
+        Array.sort ~compare:cmp sorted;
+        aux lines [] (sorted :: maps_acc))
       else if String.is_suffix line ~suffix:":"
       then aux lines map_acc maps_acc
       else
@@ -52,18 +59,27 @@ let lines_to_input lines =
   | _ -> failwith "Invalid input"
 ;;
 
+let map_value map value =
+  let rec bin_search left right =
+    if left > right
+    then value
+    else (
+      let mid = (left + right) / 2 in
+      let r_map = map.(mid) in
+      if r_map.source_start <= value && value < r_map.source_start + r_map.length
+      then value + r_map.destination_start - r_map.source_start
+      else if value < r_map.source_start
+      then bin_search left (mid - 1)
+      else bin_search (mid + 1) right)
+  in
+  bin_search 0 (Array.length map - 1)
+;;
+
 let seed_to_location maps seed =
   let rec aux curr maps =
     match maps with
     | [] -> curr
-    | map :: maps ->
-      let f x =
-        if x.source_start <= curr && curr < x.source_start + x.length
-        then Some (curr + x.destination_start - x.source_start)
-        else None
-      in
-      let new_curr = map |> List.find_map ~f |> Option.value ~default:curr in
-      aux new_curr maps
+    | map :: maps -> aux (map_value map curr) maps
   in
   aux seed maps
 ;;
